@@ -17,7 +17,7 @@ Welcome to **Marine Typer**, the first fishing + typing game that brings real-li
 
 ## ⚙️ Installation & Running
 
-This project uses React, Vite, and TypeScript. No API keys required — it runs entirely on public APIs.
+This project uses React, Vite, and TypeScript. No API keys required 😊 it runs entirely on public APIs.
 
 ```bash
 # Clone the repo
