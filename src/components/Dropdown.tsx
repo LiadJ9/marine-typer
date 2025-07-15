@@ -12,7 +12,7 @@ interface DropdownProps {
 export const Dropdown: FC<DropdownProps> = ({ title, buttons }) => {
   return (
     <Menu>
-      <MenuButton>{title}</MenuButton>
+      <MenuButton className='w-full'>{title}</MenuButton>
       <MenuItems
         transition
         className='w-44 flex flex-col bg-white/5 p-2 gap-1 rounded-lg transition ease-out data-[closed]:opacity-0 data-[enter]:duration-100'

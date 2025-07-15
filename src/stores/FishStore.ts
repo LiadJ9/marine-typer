@@ -1,125 +1,99 @@
 import type { LatLng } from 'leaflet';
 import { create } from 'zustand';
-import type { Location } from '../types';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { Fish, FishStats, Location } from '../types';
 
 //TODO: Implement FishingOptions (buying from store)
-//TODO: Implement PreviousLocations.
-//TODO: Move these to a type folder.
-interface Fish {
-  id: string;
-  type: string;
-  name: string;
-  size: number;
-}
-
-interface FishTypeStats {
-  count: number;
-  biggest: Fish;
-  smallest: Fish;
-}
-
-interface PreviousLocation extends LatLng {
-  fishCaught: Fish[];
-}
 
 interface FishStore {
-  fishes: Record<string, Fish>;
-  stats: Record<string, FishTypeStats>;
+  fishes: Record<number, FishStats>;
+  caughtFish: Fish | null;
   fishingCoords: LatLng | null;
   fishingLocation: Location | null;
   fishingOptions: Record<string, boolean>;
+  setCaughtFish: (fish: Fish | null) => void;
   setFishingOptions: (options: Record<string, boolean>) => void;
   setFishingLocation: (location: Location | null) => void;
-  previousLocations: PreviousLocation[];
-  pushPreviousLocation: (location: PreviousLocation) => void;
   setfishingCoords: (location: LatLng) => void;
-
   addFish: (fish: Fish) => void;
-  removeFish: (id: string) => void;
+  removeFish: (aphiaID: number) => void;
 }
 
-export const useFishStore = create<FishStore>((set, get) => ({
-  fishes: {},
-  stats: {},
-  fishingOptions: {},
-  fishingCoords: null,
-  fishingLocation: null,
-  previousLocations: [],
+export const useFishStore = create<FishStore>()(
+  persist(
+    (set, get) => ({
+      fishes: {},
+      fishingOptions: {},
+      fishingCoords: null,
+      fishingLocation: null,
+      caughtFish: null,
 
-  setFishingOptions: (options) => {
-    const fishingOptions = get().fishingOptions;
-    set({ fishingOptions: { ...fishingOptions, ...options } });
-  },
+      setFishingOptions: (options) => {
+        const fishingOptions = get().fishingOptions;
+        set({ fishingOptions: { ...fishingOptions, ...options } });
+      },
+      setFishingLocation: (location) => set({ fishingLocation: location }),
+      setfishingCoords: (coords) => set({ fishingCoords: coords }),
+      setCaughtFish: (fish) => set({ caughtFish: fish }),
 
-  setFishingLocation: (location) => set({ fishingLocation: location }),
-  setfishingCoords: (coords) => set({ fishingCoords: coords }),
-  pushPreviousLocation: (location) => {
-    const prevLocations = get().previousLocations;
-    //This is very unlikely unless you're botting. (😠)
-    if (prevLocations.includes(location)) return;
+      addFish: (fish) => {
+        const { aphiaID, name, lat, lon, size, scientificName, imgUrl } = fish;
 
-    if (prevLocations.length > 40) prevLocations.shift();
+        set((state) => {
+          const prev = state.fishes[aphiaID];
+          const updated: FishStats = prev
+            ? {
+                ...prev,
+                count: prev.count + 1,
+                biggestEver: Math.max(prev.biggestEver, size),
+                smallestEver: Math.min(prev.smallestEver, size),
+                locations: [...prev.locations, [lat, lon]],
+              }
+            : {
+                aphiaID,
+                name,
+                scientificName,
+                imgUrl,
+                count: 1,
+                biggestEver: size,
+                smallestEver: size,
+                locations: [[lat, lon]],
+              };
 
-    set((state) => ({
-      previousLocations: [...state.previousLocations, location],
-    }));
-  },
+          return { fishes: { ...state.fishes, [aphiaID]: updated } };
+        });
+      },
 
-  addFish: ({ type, name, size }) => {
-    const id = crypto.randomUUID();
-    const newFish: Fish = { id, type, name, size };
+      removeFish: (aphiaID) => {
+        set((state) => {
+          const prev = state.fishes[aphiaID];
+          if (!prev) return {};
 
-    set((state) => {
-      const fishes = { ...state.fishes, [id]: newFish };
+          if (prev.count <= 1) {
+            const { [aphiaID]: _, ...rest } = state.fishes;
+            return { fishes: rest };
+          }
 
-      const prev = state.stats[type];
-      let stats: FishTypeStats;
-      if (!prev) {
-        stats = { count: 1, biggest: newFish, smallest: newFish };
-      } else {
-        stats = {
-          count: prev.count + 1,
-          biggest: size > prev.biggest.size ? newFish : prev.biggest,
-          smallest: size < prev.smallest.size ? newFish : prev.smallest,
-        };
-      }
-
-      return {
-        fishes,
-        stats: { ...state.stats, [type]: stats },
-      };
-    });
-  },
-
-  removeFish: (id) => {
-    set((state) => {
-      const fish = state.fishes[id];
-      if (!fish) return {};
-
-      const fishes = state.fishes;
-
-      const remainingOfType = Object.values(fishes).filter(
-        (f) => f.type === fish.type
-      );
-      const stats = { ...state.stats };
-
-      if (remainingOfType.length === 0) {
-        delete stats[fish.type];
-      } else {
-        const biggest = remainingOfType.reduce((a, b) =>
-          b.size > a.size ? b : a
-        );
-        const smallest = remainingOfType.reduce((a, b) =>
-          b.size < a.size ? b : a
-        );
-        stats[fish.type] = {
-          count: remainingOfType.length,
-          biggest,
-          smallest,
-        };
-      }
-
-      return { fishes, stats };
-    });
-  },
-}));
+          return {
+            stats: {
+              ...state.fishes,
+              [aphiaID]: {
+                ...prev,
+                locations: prev.locations.slice(1),
+                count: prev.count - 1,
+              },
+            },
+          };
+        });
+      },
+    }),
+    {
+      name: 'fish-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        fishes: state.fishes,
+        fishingOptions: state.fishingOptions,
+      }),
+    }
+  )
+);

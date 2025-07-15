@@ -37,7 +37,7 @@ export const apiRequest = async <T = unknown>({
 export const fetchFishes = async ({
   lon,
   lat,
-  radiusMeters = 5000,
+  radiusMeters = 40000, //This has to be this high because of how the API works
 }: FetchFishesParams): Promise<FetchFishesResponse | null> => {
   const wkt = createWktBoundingBox(lon, lat, radiusMeters);
   try {
@@ -46,6 +46,7 @@ export const fetchFishes = async ({
       params: {
         geometry: wkt,
         fields: 'scientificName,aphiaID,decimalLatitude,decimalLongitude',
+        taxonId: '11676',
         size: '5',
       },
       method: 'GET',
@@ -61,38 +62,70 @@ export const fetchFishes = async ({
 export const fetchFishDetails = async (
   aphiaID: number,
   scientificName: string
-) => {
+): Promise<{ name?: string; imgUrl?: string; description?: string }> => {
   try {
-    const res = await Promise.all([
-      apiRequest<{ language: string; vernacular: string }[]>({
-        url: `https://www.marinespecies.org/rest/AphiaVernacularsByAphiaID/${aphiaID}`,
-        method: 'GET',
-      }),
-      apiRequest<{ usageKey: string }>({
-        url: `https://api.gbif.org/v1/species/match?name=${scientificName}`,
-        method: 'GET',
-      }),
-    ]);
-    const [nameRes, species] = res;
-    if (!nameRes || !species) {
-      throw new Error('One of the requests failed', {
-        cause: { nameRes, species },
-      });
-    }
-    const englishRes = nameRes?.find((n) => n.language === 'English');
-    const imageRes = await apiRequest<{ results: { identifier: string }[] }>({
-      url: `https://api.gbif.org/v1/species/${species.usageKey}/media`,
+    const fishName = await apiRequest<
+      { language: string; vernacular: string }[]
+    >({
+      url: `https://www.marinespecies.org/rest/AphiaVernacularsByAphiaID/${aphiaID}`,
       method: 'GET',
     });
-    const imageUrl =
-      imageRes?.results?.length > 0 && imageRes.results[0]?.identifier;
+    console.log(fishName);
+
+    const englishRes =
+      fishName && fishName?.find((n) => n.language === 'English');
+    const { imgUrl, description } = await fetchWikipediaDetails(scientificName);
     return {
-      name: englishRes?.vernacular || '',
-      image: imageUrl || '',
+      name: englishRes?.vernacular || 'Not found',
+      imgUrl: imgUrl || undefined,
+      description: description || undefined,
     };
   } catch (e) {
     console.error(e);
-    toast.error('Failed to fetch fish NAME/IMAGE :( e: ' + e);
+    toast.error('Failed to fetch some Information on this fish, sorry ;( ');
+    return { name: undefined, imgUrl: undefined };
+  }
+};
+
+export const fetchWikipediaDetails = async (
+  fishName: string
+): Promise<{ imgUrl?: string; description?: string }> => {
+  try {
+    const res = await apiRequest<{
+      query: {
+        pages: Record<
+          string,
+          {
+            thumbnail?: { source: string };
+            extract?: string;
+          }
+        >;
+      };
+    }>({
+      url: 'https://en.wikipedia.org/w/api.php',
+      method: 'GET',
+      params: {
+        action: 'query',
+        format: 'json',
+        origin: '*',
+        titles: fishName,
+        prop: 'pageimages|extracts', //  include both images and extracts
+        piprop: 'thumbnail|name',
+        pithumbsize: '500',
+        pilicense: 'any',
+        exintro: 'true', // ← only the intro section :contentReference[oaicite:0]{index=0}
+        explaintext: 'true', // ← strip out any HTML :contentReference[oaicite:1]{index=1}
+        redirects: '1', // ← follow redirects if needed
+      },
+    });
+
+    // grab the single page returned
+    const page = res.query.pages[Object.keys(res.query.pages)[0]];
+    return { imgUrl: page.thumbnail?.source, description: page.extract };
+  } catch (e) {
+    console.error(e);
+    toast.error('Failed to fetch fish Wiki information e: ' + e);
+    return { imgUrl: undefined, description: undefined };
   }
 };
 

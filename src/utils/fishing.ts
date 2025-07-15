@@ -1,3 +1,6 @@
+import { TRASH_EMOJIS } from '../consts';
+import type { Fish, Occurrence, RequiredPick } from '../types';
+
 /**
  * Create a WKT POLYGON string around a lat/lon point (For fetching fish data).
  * @param {number} lon - Longitude
@@ -22,4 +25,44 @@ export const createWktBoundingBox = (
   const maxLon = lon + deltaLon;
 
   return `POLYGON((${minLon} ${minLat},${maxLon} ${minLat},${maxLon} ${maxLat},${minLon} ${maxLat},${minLon} ${minLat}))`;
+};
+
+export const formatRequestFishData = (
+  fishes: Occurrence[]
+): RequiredPick<
+  Fish,
+  'aphiaID' | 'scientificName' | 'size' | 'lat' | 'lon' | 'properties'
+>[] => {
+  const newFishes: Fish[] = fishes.map((fish) => {
+    const { size, isBig, isSmall } = calculateRandomFishSize();
+    return {
+      aphiaID: fish.aphiaID,
+      scientificName: fish.scientificName,
+      lat: fish.decimalLatitude,
+      lon: fish.decimalLongitude,
+      size,
+      properties: { isBig, isSmall },
+    };
+  });
+
+  return newFishes;
+};
+
+export const calculateRandomFishSize = () => {
+  const isBig = Math.random() >= 0.9;
+  const isSmall = Math.random() <= 0.1;
+  if (isBig) {
+    const bigSize = Math.floor(Math.random() * 100) + 1;
+    return { size: bigSize, isBig };
+  }
+  if (isSmall) {
+    const smallSize = Math.floor(Math.random() * 10) + 1;
+    return { size: smallSize, isSmall };
+  }
+  const size = Math.floor(Math.random() * 50) + 1;
+  return { size };
+};
+
+export const getRandomTrashEmoji = () => {
+  return TRASH_EMOJIS[Math.floor(Math.random() * TRASH_EMOJIS.length)];
 };

@@ -1,38 +1,55 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useFishStore } from '../stores';
 import { fetchCountry, fetchFishDetails, fetchFishes } from '../api';
-import { pickRandom } from '../utils';
+import {
+  formatRequestFishData,
+  getRandomTrashEmoji,
+  pickRandom,
+} from '../utils';
 
 export const InfoOverlay = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const fishingCoords = useFishStore((s) => s.fishingCoords);
   const fishingLocation = useFishStore((s) => s.fishingLocation);
   const setFishingLocation = useFishStore((s) => s.setFishingLocation);
+  const setCaughtFish = useFishStore((s) => s.setCaughtFish);
 
   const onFish = async () => {
     try {
+      setIsLoading(true);
       if (!fishingCoords) return;
+      toast('Casting line... 🧵');
       const fishRes = await fetchFishes({
         lon: fishingCoords.lng,
         lat: fishingCoords.lat,
       });
-      if (!fishRes) {
-        toast.error('No fishes found :(');
+      if (!fishRes || fishRes.results.length === 0) {
+        toast.error(`No fishes found... ${getRandomTrashEmoji()}`, {
+          style: {
+            border: '1px solid bg-slate-900',
+          },
+        });
         return;
       }
-      const fish = pickRandom(fishRes.results);
+      toast('Something is biting..! 🐟');
+      const fishes = formatRequestFishData(fishRes.results);
+      const fish = pickRandom(fishes);
       const firstFish = fish[0];
       const fishDetails = await fetchFishDetails(
         firstFish.aphiaID,
         firstFish.scientificName
       );
+
       const fishData = {
         ...firstFish,
         ...fishDetails,
       };
-      console.log(fishData);
+      setCaughtFish(fishData);
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,16 +61,23 @@ export const InfoOverlay = () => {
 
   if (!fishingCoords) return null;
   return (
-    <div className='absolute top-0 right-0 m-10 w-4/12 h-40 p-4 flex justify-between bg-slate-800 rounded-2xl z-50'>
+    <div className='absolute top-0 right-0 m-10 w-4/12 p-4 flex justify-between bg-slate-800 rounded-2xl z-50'>
       <div className='location-info'>
         <div className='font-bold text-xl'>Selected Location</div>
-        <div className='flex flex-col gap-2'>
-          {fishingLocation?.country && `Country: ${fishingLocation.country}`}
-          {fishingLocation?.city && `City: ${fishingLocation.city}`}
+        <div className='flex flex-col gap-0.5'>
+          <div>
+            {fishingLocation?.country && `Country: ${fishingLocation.country}`}
+          </div>
+          <div>{fishingLocation?.city && `City: ${fishingLocation.city}`}</div>
         </div>
       </div>
       <div>
-        <button onClick={() => onFish()} type='button' role='button'>
+        <button
+          disabled={isLoading}
+          onClick={() => onFish()}
+          type='button'
+          role='button'
+        >
           Go fish!
         </button>
       </div>

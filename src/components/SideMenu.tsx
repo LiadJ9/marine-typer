@@ -1,9 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import { MAP_STYLES } from '../consts';
 import { useSettingsStore } from '../stores';
 import { Dropdown } from './Dropdown';
+import { Dialog } from './Dialog';
+import { FishCompendiumDialog } from './Dialogs';
 
 export const SideMenu = () => {
+  const [isCompendiumOpen, setIsCompendiumOpen] = useState(false);
   const setMapStyle = useSettingsStore((s) => s.setMapStyle);
 
   const mapStyleButtons = useMemo(
@@ -17,11 +21,35 @@ export const SideMenu = () => {
 
   return (
     <div className='w-60 h-full bg-slate-800 p-2'>
-      <div className='flex flex-col gap-2'>
-        <div className='flex text-center items-center justify-center font-bold'>
-          Fish quest!
+      <div className='flex flex-col h-full justify-between py-1'>
+        <div className='flex flex-col gap-4'>
+          <div className='flex text-center items-center justify-center font-bold text-2xl'>
+            Marine Typer 🎣
+          </div>
+          <div className='flex flex-col gap-2'>
+            <button
+              className='w-full'
+              onClick={() => setIsCompendiumOpen(true)}
+            >
+              Marine Compendium
+            </button>
+            <Dialog isOpen={isCompendiumOpen} setIsOpen={setIsCompendiumOpen}>
+              {() => (
+                <FishCompendiumDialog
+                  isOpen={isCompendiumOpen}
+                  onClose={() => setIsCompendiumOpen(false)}
+                />
+              )}
+            </Dialog>
+            <button className='w-full' onClick={() => toast('Coming soon!?')}>
+              Shop
+            </button>
+          </div>
         </div>
-        <Dropdown title='Map Style' buttons={mapStyleButtons} />
+
+        <div className='py-2 flex w-full'>
+          <Dropdown title='Map Style' buttons={mapStyleButtons} />
+        </div>
       </div>
     </div>
   );
