@@ -33,6 +33,8 @@ pnpm dev
 
 Open your browser at `http://localhost:5173` (or the URL shown in your terminal) and start fishing!
 
+Or alternitively, [Click here](https://marine-typer.vercel.app/) to play without hosting it yourself.
+
 ## 🎮 How to Play
 
 1. **Select a Location**: Click on the world map to choose a fishing spot.
