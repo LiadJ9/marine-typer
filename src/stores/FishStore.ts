@@ -1,16 +1,25 @@
+import toast from 'react-hot-toast';
 import type { LatLng } from 'leaflet';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Fish, FishStats, Location } from '../types';
+import { fetchFishDetails, fetchFishes } from '../api';
+import {
+  formatRequestFishData,
+  getRandomTrashEmoji,
+  pickRandom,
+} from '../utils';
 
 //TODO: Implement FishingOptions (buying from store)
 
 interface FishStore {
   fishes: Record<number, FishStats>;
+  isCatchingFish: boolean;
   caughtFish: Fish | null;
   fishingCoords: LatLng | null;
   fishingLocation: Location | null;
   fishingOptions: Record<string, boolean>;
+  onFish: () => Promise<void>;
   setCaughtFish: (fish: Fish | null) => void;
   setFishingOptions: (options: Record<string, boolean>) => void;
   setFishingLocation: (location: Location | null) => void;
@@ -24,6 +33,7 @@ export const useFishStore = create<FishStore>()(
     (set, get) => ({
       fishes: {},
       fishingOptions: {},
+      isCatchingFish: false,
       fishingCoords: null,
       fishingLocation: null,
       caughtFish: null,
@@ -63,7 +73,45 @@ export const useFishStore = create<FishStore>()(
           return { fishes: { ...state.fishes, [aphiaID]: updated } };
         });
       },
+      onFish: async () => {
+        try {
+          set({ isCatchingFish: true });
+          const { fishingCoords } = get();
+          if (!fishingCoords) return;
+          toast('Casting line... 🧵');
+          const fishRes = await fetchFishes({
+            lon: fishingCoords.lng,
+            lat: fishingCoords.lat,
+          });
+          if (!fishRes || fishRes.results.length === 0) {
+            toast.error(`No fishes found... ${getRandomTrashEmoji()}`, {
+              style: {
+                border: '1px solid bg-slate-900',
+              },
+            });
+            return;
+          }
+          toast('Something is biting..! 🐟');
+          const fishes = formatRequestFishData(fishRes.results);
+          const fish = pickRandom(fishes);
+          const firstFish = fish[0];
+          const fishDetails = await fetchFishDetails(
+            firstFish.aphiaID,
+            firstFish.scientificName
+          );
 
+          const fishData = {
+            ...firstFish,
+            ...fishDetails,
+          };
+          set({ caughtFish: fishData });
+        } catch (e) {
+          console.error(e);
+        } finally {
+          set({ isCatchingFish: false });
+        }
+      },
+      //Currently unused
       removeFish: (aphiaID) => {
         set((state) => {
           const prev = state.fishes[aphiaID];

@@ -5,6 +5,7 @@ import { useFishStore } from './stores';
 const App = () => {
   const caughtFish = useFishStore((s) => s.caughtFish);
   const setCaughtFish = useFishStore((s) => s.setCaughtFish);
+
   return (
     <div className='relative w-dvw h-[100vh] flex justify-center items-center'>
       <Toaster containerClassName='z-50' />

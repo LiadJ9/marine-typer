@@ -9,11 +9,12 @@
   --color-retro-hover: #c49e48;
   --color-retro-text: #5c3b2f;
   --color-retro-ring: #c49e48;
+  --font-montserrat: 'Montserrat', system-ui, sans-serif;
 }
 
 @layer base {
   button {
-    @apply rounded-lg px-[1em] py-[0.25em] text-base font-medium font-[inherit]
+    @apply rounded-lg px-[1em] py-[0.25em] text-base font-semibold font-[inherit]
            bg-cream text-retro-text border-2 border-retro
            cursor-pointer transition-colors duration-200;
   }
@@ -39,6 +40,15 @@
   .wrong {
     background-color: #ff9380;
   }
+}
+.leaflet-popup .leaflet-popup-content-wrapper {
+  @apply bg-slate-800 text-retro border-retro-text border-2 rounded-lg shadow-lg;
+}
+.leaflet-popup .leaflet-popup-tip {
+  @apply border-retro-text bg-retro-text;
+}
+.leaflet-container .leaflet-right .leaflet-bar {
+  @apply border-none;
 }
 
 :root {

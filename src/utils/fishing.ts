@@ -1,5 +1,11 @@
 import { TRASH_EMOJIS } from '../consts';
-import type { Fish, Occurrence, RequiredPick } from '../types';
+import type {
+  Fish,
+  FishMarkers,
+  FishStats,
+  Occurrence,
+  RequiredPick,
+} from '../types';
 
 /**
  * Create a WKT POLYGON string around a lat/lon point (For fetching fish data).
@@ -65,4 +71,21 @@ export const calculateRandomFishSize = () => {
 
 export const getRandomTrashEmoji = () => {
   return TRASH_EMOJIS[Math.floor(Math.random() * TRASH_EMOJIS.length)];
+};
+
+export const getFishMarkers = (fishes: Record<number, FishStats>) => {
+  let markers: FishMarkers[] = [];
+  Object.values(fishes).map((fish) => {
+    const fishMarkers = fish.locations.map((location) => {
+      return {
+        aphiaID: fish.aphiaID,
+        position: location,
+        scientificName: fish.scientificName,
+        name: fish.name,
+        imgUrl: fish.imgUrl,
+      };
+    });
+    markers = [...markers, ...fishMarkers];
+  });
+  return markers;
 };

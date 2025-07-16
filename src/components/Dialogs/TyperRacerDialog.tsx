@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type FC } from 'react';
 import { MOBY_QUOTES } from '../../consts';
 import { useFishStore, useSettingsStore } from '../../stores';
 
@@ -77,7 +77,7 @@ export const TyperRacerDialog: FC<TyperRacerDialogProps> = ({ onSuccess }) => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setTypedValue(value);
 

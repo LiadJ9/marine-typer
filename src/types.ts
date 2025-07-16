@@ -1,4 +1,4 @@
-import type { LatLng } from 'leaflet';
+import type { LatLng, LatLngExpression } from 'leaflet';
 
 export type Location = { country: string; city: string };
 
@@ -38,10 +38,18 @@ export interface FishStats
   name?: string;
   scientificName: string;
   imgUrl?: string;
-  locations: [number, number][];
+  locations: LatLngExpression[];
   count: number;
   biggestEver: number;
   smallestEver: number;
+}
+
+export interface FishMarkers {
+  aphiaID: number;
+  position: LatLngExpression;
+  scientificName: string;
+  name?: string;
+  imgUrl?: string;
 }
 
 export type RequiredPick<T, K extends keyof T> = Partial<T> &

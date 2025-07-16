@@ -16,7 +16,7 @@ export const FishCompendiumDialog: FC<FishCompendiumDialogProps> = ({
 
   return (
     <div className='flex items-center justify-center w-2xl'>
-      <div className='rounded-lg w-full overflow-auto p-6'>
+      <div className='rounded-lg w-full p-6'>
         <header className='flex justify-between items-center mb-6'>
           <h2 className='text-2xl font-bold'>Marine Compendium</h2>
           <button
@@ -27,7 +27,7 @@ export const FishCompendiumDialog: FC<FishCompendiumDialogProps> = ({
           </button>
         </header>
 
-        <div className='grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'>
+        <div className='grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-h-96 overflow-auto'>
           {Object.values(fishes).length === 0 && (
             <p>No fishes found! Go fish!</p>
           )}

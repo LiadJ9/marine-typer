@@ -51,6 +51,12 @@ Open your browser at `http://localhost:5173` (or the URL shown in your terminal)
 - **Vernacular Names**: MarineSpecies REST API
 - **Details & Images**: Wikipedia API
 
+## 📋 Attributions
+
+- Bait icons created by Freepik - Flaticon
+- Fishing boat icons created by Freepik - Flaticon
+- Google maps icons created by Yuju - Flaticon
+
 ## 💡 Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to open an issue or submit a pull request.

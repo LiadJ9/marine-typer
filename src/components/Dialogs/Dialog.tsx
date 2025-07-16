@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import { type FC, type ReactNode } from 'react';
 import {
   Dialog as HeadlessDialog,
   DialogPanel,
@@ -9,10 +9,7 @@ interface DialogProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   title?: string;
-  children: (
-    isOpen: boolean,
-    setIsOpen: (open: boolean) => void
-  ) => React.ReactNode;
+  children: (isOpen: boolean, setIsOpen: (open: boolean) => void) => ReactNode;
 }
 
 export const Dialog: FC<DialogProps> = ({

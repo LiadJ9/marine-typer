@@ -70,13 +70,12 @@ export const fetchFishDetails = async (
       url: `https://www.marinespecies.org/rest/AphiaVernacularsByAphiaID/${aphiaID}`,
       method: 'GET',
     });
-    console.log(fishName);
 
     const englishRes =
       fishName && fishName?.find((n) => n.language === 'English');
     const { imgUrl, description } = await fetchWikipediaDetails(scientificName);
     return {
-      name: englishRes?.vernacular || 'Not found',
+      name: englishRes?.vernacular || '',
       imgUrl: imgUrl || undefined,
       description: description || undefined,
     };
@@ -161,7 +160,7 @@ export const fetchCountry = async (
     callBack(location);
     return location;
   } catch (err) {
-    console.log(err);
+    console.error(err);
     toast.error('Failed to fetch country :( E: ' + err);
     const location = {
       country: 'Open sea',
