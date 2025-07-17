@@ -2,6 +2,8 @@
 
 Welcome to **Marine Typer**, the first fishing + typing game that brings real-life marine animals to your fingertips! Explore the world map, fish for marine creatures based on actual occurrences, and hone your typing skills with quotes from Moby Dick.
 
+![Image of marine typer](https://i.ibb.co/G4bPYT25/Marine-typer-img.png)
+
 ## 🚀 Features
 
 - **Interactive World Map**: Click anywhere on the map (powered by Leaflet and OpenStreetMap) to select a fishing location.
