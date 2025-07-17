@@ -1,3 +1,5 @@
+import type { LatLngExpression } from 'leaflet';
+
 export const MAP_STYLES = {
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -12,6 +14,13 @@ export const MAP_STYLES = {
     attribution: 'Tiles © Esri',
   },
 };
+
+export const STARTING_LOCATIONS: LatLngExpression[] = [
+  [8.546257, 139.362728],
+  [49.996441, -9.071384],
+  [24.998009, -92.095356],
+  [-18.097821, 49.984052],
+];
 
 export const TRASH_EMOJIS = ['🏺', '📿', '📜', '🥾', '🗑️', '🐚', '📦', '💾'];
 

@@ -35,9 +35,9 @@ export const MapContent = () => {
           position={[fishingCoords.lat, fishingCoords.lng]}
         />
       )}
-      {fishMarkers.map((fish) => (
+      {fishMarkers.map((fish, index) => (
         <FishMarker
-          key={fish.aphiaID}
+          key={fish.aphiaID + index}
           marker='fish'
           position={fish.position}
           fishDetails={fish}

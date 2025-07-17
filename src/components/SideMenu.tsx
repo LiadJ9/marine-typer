@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { MAP_STYLES } from '../consts';
+import { GithubIcon } from '../assets';
 import { useSettingsStore } from '../stores';
 import { Dropdown } from './Dropdown';
 import { Dialog } from './Dialogs/Dialog';
@@ -52,8 +53,23 @@ export const SideMenu = () => {
           </div>
         </div>
 
-        <div className='py-2 flex w-full'>
+        <div className='py-2 flex flex-col gap-2'>
           <Dropdown title='Map Style' buttons={mapStyleButtons} />
+          <div className='flex items-end gap-2'>
+            <button
+              onClick={() =>
+                window.open(
+                  'https://github.com/LiadJ9/marine-typer',
+                  '_blank',
+                  'noopener,noreferrer'
+                )
+              }
+              className='p-2 rounded-full'
+            >
+              <img src={GithubIcon} />
+            </button>
+            <span className='text-xs font-semibold'>Created by LiadJ9</span>
+          </div>
         </div>
       </div>
     </div>
